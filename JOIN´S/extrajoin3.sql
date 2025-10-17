@@ -64,22 +64,25 @@ INSERT INTO Rents VALUES
 (7, 103, 5, '2024-03-10', 'Activo');
 
 
-SELECT ' TABLAS BASE' AS '';
+SELECT ' PROBLEMA: ¿Qué pasa si usamos INNER JOIN? ' AS '';
+SELECT 'INNER JOIN excluye los libros sin autor (book_id 5)' AS '';
 
-SELECT 'Authors:' AS '';
-SELECT * FROM Authors;
+SELECT 
+    c.customer_name AS Nombre_Cliente,
+    b.title AS Nombre_Libro,
+    a.author_name AS Nombre_Autor,
+    r.status AS Estado_Alquiler
+FROM Rents r
+INNER JOIN Customers c ON r.customer_id = c.customer_id
+INNER JOIN Books b ON r.book_id = b.book_id
+INNER JOIN Authors a ON b.author_id = a.author_id
+ORDER BY c.customer_name, r.rent_date;
 
-SELECT 'Books:' AS '';
-SELECT * FROM Books;
-
-SELECT 'Customers:' AS '';
-SELECT * FROM Customers;
-
-SELECT 'Rents:' AS '';
-SELECT * FROM Rents;
+SELECT 'RESULTADO: Solo 5 rentas (faltan las 2 del libro sin autor)' AS '';
 
 
-SELECT ' SOLUCIÓN: CONSULTA CON MÚLTIPLES JOINS ' AS '';
+SELECT 'SOLUCIÓN CORRECTA: LEFT JOIN + COALESCE ' AS '';
+SELECT 'LEFT JOIN incluye TODOS los libros, incluso sin autor' AS '';
 
 SELECT 
     c.customer_name AS Nombre_Cliente,
@@ -92,57 +95,80 @@ INNER JOIN Books b ON r.book_id = b.book_id
 LEFT JOIN Authors a ON b.author_id = a.author_id
 ORDER BY c.customer_name, r.rent_date;
 
-
-SELECT ' SOLO ALQUILERES ACTIVOS ' AS '';
-
-SELECT 
-    c.customer_name AS Nombre_Cliente,
-    b.title AS Nombre_Libro,
-    COALESCE(a.author_name, 'Sin autor') AS Nombre_Autor,
-    r.status AS Estado_Alquiler
-FROM Rents r
-INNER JOIN Customers c ON r.customer_id = c.customer_id
-INNER JOIN Books b ON r.book_id = b.book_id
-LEFT JOIN Authors a ON b.author_id = a.author_id
-WHERE r.status = 'Activo'
-ORDER BY c.customer_name;
+SELECT 'RESULTADO: Las 7 rentas completas' AS '';
 
 
-SELECT 'LIBROS SIN AUTOR ' AS '';
+SELECT ' COMPARACIÓN LADO A LADO ' AS '';
 
-SELECT 
-    c.customer_name AS Nombre_Cliente,
-    b.title AS Nombre_Libro,
-    COALESCE(a.author_name, 'Sin autor') AS Nombre_Autor,
-    r.status AS Estado_Alquiler
-FROM Rents r
-INNER JOIN Customers c ON r.customer_id = c.customer_id
-INNER JOIN Books b ON r.book_id = b.book_id
-LEFT JOIN Authors a ON b.author_id = a.author_id
-WHERE b.author_id IS NULL
-ORDER BY c.customer_name;
+SELECT 'Total de rentas en la base de datos:' AS Descripcion, COUNT(*) AS Cantidad FROM Rents
+UNION ALL
+SELECT 'Rentas mostradas con INNER JOIN:', 
+    (SELECT COUNT(*) FROM Rents r
+     INNER JOIN Books b ON r.book_id = b.book_id
+     INNER JOIN Authors a ON b.author_id = a.author_id)
+UNION ALL
+SELECT 'Rentas mostradas con LEFT JOIN:', 
+    (SELECT COUNT(*) FROM Rents r
+     INNER JOIN Books b ON r.book_id = b.book_id
+     LEFT JOIN Authors a ON b.author_id = a.author_id)
+UNION ALL
+SELECT 'Rentas PERDIDAS con INNER JOIN:', 
+    (SELECT COUNT(*) FROM Rents WHERE book_id = 5);
 
 
-SELECT 'ESTADÍSTICAS POR ESTADO ' AS '';
+SELECT ' ¿QUIÉNES RENTARON EL LIBRO SIN AUTOR?' AS '';
 
 SELECT 
-    r.status AS Estado,
-    COUNT(*) AS Total_Alquileres,
-    COUNT(DISTINCT c.customer_id) AS Clientes_Diferentes
-FROM Rents r
-INNER JOIN Customers c ON r.customer_id = c.customer_id
-GROUP BY r.status
-ORDER BY Total_Alquileres DESC;
-
-
-SELECT 'CLIENTES CON LIBROS SIN AUTOR' AS '';
-
-SELECT DISTINCT
     c.customer_name AS Cliente,
-    COUNT(r.rent_id) AS Libros_Sin_Autor_Rentados
+    b.title AS Libro,
+    r.rent_date AS Fecha,
+    r.status AS Estado
 FROM Rents r
 INNER JOIN Customers c ON r.customer_id = c.customer_id
 INNER JOIN Books b ON r.book_id = b.book_id
 WHERE b.author_id IS NULL
-GROUP BY c.customer_id, c.customer_name
-ORDER BY Libros_Sin_Autor_Rentados DESC;
+ORDER BY r.rent_date;
+
+
+SELECT 'ESTADÍSTICA: Libros con y sin autor' AS '';
+
+SELECT 
+    CASE 
+        WHEN b.author_id IS NULL THEN 'Sin Autor'
+        ELSE 'Con Autor'
+    END AS Tipo_Libro,
+    COUNT(DISTINCT b.book_id) AS Total_Libros,
+    COUNT(r.rent_id) AS Total_Rentas
+FROM Books b
+LEFT JOIN Rents r ON b.book_id = r.book_id
+GROUP BY 
+    CASE 
+        WHEN b.author_id IS NULL THEN 'Sin Autor'
+        ELSE 'Con Autor'
+    END;
+
+
+SELECT 'ANÁLISIS: ¿Por qué es importante LEFT JOIN?' AS '';
+
+SELECT 
+    'Si Pedro (104) renta "Libro sin autor conocido":' AS Escenario
+UNION ALL
+SELECT '- Con INNER JOIN: Pedro NO aparece en resultados'
+UNION ALL
+SELECT '- Con LEFT JOIN: Pedro SÍ aparece con autor = NULL'
+UNION ALL
+SELECT '- Con LEFT JOIN + COALESCE: Pedro aparece con "Sin autor"'
+UNION ALL
+SELECT ''
+UNION ALL
+SELECT 'LEFT JOIN es esencial para NO perder datos';
+
+
+SELECT 'TU CÓDIGO ESTÁ CORRECTO' AS '';
+SELECT ' LEFT JOIN para Authors' AS Verificacion
+UNION ALL
+SELECT ' COALESCE para manejar NULL'
+UNION ALL
+SELECT ' Incluye todos los libros, tengan o no autor'
+UNION ALL
+SELECT ' No pierde información de rentas';

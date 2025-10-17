@@ -1,4 +1,9 @@
 DROP TABLE IF EXISTS automoviles_original;
+DROP TABLE IF EXISTS car_owners;
+DROP TABLE IF EXISTS automobiles;
+DROP TABLE IF EXISTS owners;
+DROP TABLE IF EXISTS insurance_policies;
+
 
 CREATE TABLE automoviles_original (
     vin TEXT,
@@ -19,9 +24,7 @@ INSERT INTO automoviles_original VALUES
 ('5J6RM4H77EL', 'Honda', 'CR-V', 2014, 'Blue', 103, 'Claire', '555-123-4567', 'DEF Insurance', 'POL67890'),
 ('1G1RA6E11U', 'Chevrolet', 'Volt', 2015, 'Red', 104, 'Dave', '111-222-3333', 'GHI Insurance', 'POL98765');
 
-SELECT * FROM automoviles_original;
 
-DROP TABLE IF EXISTS automobiles ;
 CREATE TABLE automobiles (
     vin TEXT PRIMARY KEY,
     make TEXT NOT NULL,
@@ -30,55 +33,118 @@ CREATE TABLE automobiles (
     color TEXT
 );
 
-DROP TABLE IF EXISTS owners;
 CREATE TABLE owners (
     owner_id INTEGER PRIMARY KEY,
     owner_name TEXT NOT NULL,
     owner_phone TEXT
-
 );
 
-DROP TABLE IF EXISTS car_owners;
-CREATE TABLE car_owners (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    vin TEXT,
-    owner_id INTEGER,
-    insurance_policy TEXT,
-    FOREIGN KEY (vin) REFERENCES automobiles (vin),
-    FOREIGN KEY (owner_id) REFERENCES owners(owner_id),
-    FOREIGN KEY (insurance_policy) REFERENCES insurance_policies (insurance_policy)
-
-);
-
-DROP TABLE IF EXISTS insurance_policies;
 CREATE TABLE insurance_policies (
     insurance_policy TEXT PRIMARY KEY,
     insurance_company TEXT NOT NULL
 );
 
-INSERT INTO automobiles (vin,make, model, year, color )
+CREATE TABLE car_owners (
+    vin TEXT,
+    owner_id INTEGER,
+    insurance_policy TEXT,
+    PRIMARY KEY (vin, owner_id),
+    FOREIGN KEY (vin) REFERENCES automobiles(vin),
+    FOREIGN KEY (owner_id) REFERENCES owners(owner_id),
+    FOREIGN KEY (insurance_policy) REFERENCES insurance_policies(insurance_policy)
+);
+
+
+INSERT INTO automobiles (vin, make, model, year, color)
 SELECT DISTINCT vin, make, model, year, color
 FROM automoviles_original;
 
-
-INSERT INTO owners( owner_id, owner_name,owner_phone)
+INSERT INTO owners (owner_id, owner_name, owner_phone)
 SELECT DISTINCT owner_id, owner_name, owner_phone
 FROM automoviles_original;
-
 
 INSERT INTO insurance_policies (insurance_policy, insurance_company)
 SELECT DISTINCT insurance_policy, insurance_company
 FROM automoviles_original;
 
-INSERT INTO car_owners(vin, owner_id, insurance_policy)
-SELECT vin , owner_id, insurance_policy
+INSERT INTO car_owners (vin, owner_id, insurance_policy)
+SELECT vin, owner_id, insurance_policy
 FROM automoviles_original;
 
 
+SELECT ' TABLA ORIGINAL ' AS '';
+SELECT * FROM automoviles_original;
+
+SELECT 'AUTOMOBILES (autos únicos por VIN) ' AS '';
 SELECT * FROM automobiles;
+
+SELECT 'OWNERS (dueños únicos) ' AS '';
 SELECT * FROM owners;
+
+SELECT 'INSURANCE_POLICIES (pólizas únicas) ' AS '';
 SELECT * FROM insurance_policies;
-SELECT * FROM car_owners; 
+
+SELECT ' CAR_OWNERS (relación N:N) ' AS '';
+SELECT * FROM car_owners;
 
 
+SELECT ' ANÁLISIS: Autos con múltiples dueños ' AS '';
+SELECT 
+    a.vin,
+    a.make || ' ' || a.model AS auto,
+    COUNT(DISTINCT co.owner_id) AS total_duenos,
+    GROUP_CONCAT(o.owner_name, ', ') AS nombres_duenos
+FROM automobiles a
+INNER JOIN car_owners co ON a.vin = co.vin
+INNER JOIN owners o ON co.owner_id = o.owner_id
+GROUP BY a.vin, a.make, a.model
+HAVING COUNT(DISTINCT co.owner_id) > 1;
 
+
+SELECT ' ANÁLISIS: Dueños con múltiples autos ' AS '';
+SELECT 
+    o.owner_id,
+    o.owner_name,
+    COUNT(DISTINCT co.vin) AS total_autos,
+    GROUP_CONCAT(a.make || ' ' || a.model, ', ') AS autos
+FROM owners o
+INNER JOIN car_owners co ON o.owner_id = co.owner_id
+INNER JOIN automobiles a ON co.vin = a.vin
+GROUP BY o.owner_id, o.owner_name
+ORDER BY total_autos DESC;
+
+
+SELECT 'CONSULTA COMPLETA: Reconstruir tabla original ' AS '';
+SELECT 
+    a.vin,
+    a.make,
+    a.model,
+    a.year,
+    a.color,
+    o.owner_id,
+    o.owner_name,
+    o.owner_phone,
+    ip.insurance_company,
+    ip.insurance_policy
+FROM automobiles a
+INNER JOIN car_owners co ON a.vin = co.vin
+INNER JOIN owners o ON co.owner_id = o.owner_id
+INNER JOIN insurance_policies ip ON co.insurance_policy = ip.insurance_policy
+ORDER BY a.vin, o.owner_id;
+
+
+SELECT ' VERIFICACIÓN: No hay duplicación de VIN ' AS '';
+SELECT 
+    'Total VIN en tabla original:' AS Descripcion,
+    COUNT(*) AS Total
+FROM automoviles_original
+UNION ALL
+SELECT 
+    'Total VIN únicos en tabla original:',
+    COUNT(DISTINCT vin)
+FROM automoviles_original
+UNION ALL
+SELECT 
+    'Total VIN en tabla automobiles:',
+    COUNT(*)
+FROM automobiles;
