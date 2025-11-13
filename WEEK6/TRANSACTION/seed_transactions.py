@@ -14,10 +14,10 @@ def seed_test_data():
     session = Session()
     
     try:
-        # Create tables if they don't exist
+        
         Base.metadata.create_all(engine)
         
-        # Check if data already exists
+        
         existing_users = session.query(User).count()
         if existing_users > 0:
             print("\n⚠️  Test data already exists. Skipping seed...")
@@ -27,7 +27,7 @@ def seed_test_data():
         print("🌱 SEEDING TEST DATA")
         print("="*60)
         
-        # Create users
+        
         users = [
             User(name="Juan Pérez", email="juan@example.com"),
             User(name="María García", email="maria@example.com"),
@@ -37,10 +37,10 @@ def seed_test_data():
         for user in users:
             session.add(user)
         
-        session.flush()  # Get IDs without committing
+        session.flush()  
         print(f"\n✅ Created {len(users)} users")
         
-        # Create products
+        
         products = [
             Product(name="Laptop HP", price=899.99, stock=10),
             Product(name="Mouse Logitech", price=25.50, stock=50),
