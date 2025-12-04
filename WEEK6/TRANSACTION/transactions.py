@@ -225,8 +225,7 @@ if __name__ == "__main__":
     print("="*70)
     
     
-    # from seed_transactions import seed_test_data
-    # seed_test_data()
+    
     
     
     view_all_users()

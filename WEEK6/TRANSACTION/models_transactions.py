@@ -12,7 +12,7 @@ import enum
 
 Base = declarative_base()
 
-# Create engine for transactions database
+
 engine = create_engine('sqlite:///transactions.db', echo=False)
 
 
@@ -32,7 +32,7 @@ class Product(Base):
     price = Column(Float, nullable=False)
     stock = Column(Integer, nullable=False, default=0)
     
-    # Relationship with invoices
+    
     invoices = relationship("Invoice", back_populates="product")
     
     def __repr__(self):
@@ -47,7 +47,7 @@ class User(Base):
     name = Column(String(100), nullable=False)
     email = Column(String(100), unique=True, nullable=False)
     
-    # Relationship with invoices
+    
     invoices = relationship("Invoice", back_populates="user")
     
     def __repr__(self):
@@ -66,7 +66,7 @@ class Invoice(Base):
     total = Column(Float, nullable=False)
     status = Column(Enum(InvoiceStatus), default=InvoiceStatus.COMPLETED)
     
-    # Relationships
+    
     user = relationship("User", back_populates="invoices")
     product = relationship("Product", back_populates="invoices")
     
@@ -74,7 +74,7 @@ class Invoice(Base):
         return f"<Invoice(id={self.id}, user_id={self.user_id}, product_id={self.product_id}, quantity={self.quantity}, total={self.total}, status={self.status.value})>"
 
 
-# Create all tables
+
 if __name__ == "__main__":
     print("\n" + "="*60)
     print("📦 CREATING TABLES FOR TRANSACTIONS")
