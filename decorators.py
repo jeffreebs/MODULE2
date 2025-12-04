@@ -8,7 +8,7 @@ def role_required(required_role):
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
-            # Obtener user_id del request (asumiendo que viene en headers o en JSON)
+            
             user_id = request.headers.get('user_id') or request.json.get('user_id')
             
             if not user_id:
@@ -16,7 +16,7 @@ def role_required(required_role):
             
             conn = get_connection()
             
-            # Consultar el rol del usuario
+            
             stmt = select(roles_table.c.name).select_from(
                 user_roles_table.join(roles_table, user_roles_table.c.role_id == roles_table.c.id)
             ).where(user_roles_table.c.user_id == user_id)

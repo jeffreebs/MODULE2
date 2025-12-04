@@ -2,7 +2,7 @@ from sqlalchemy import Table, Column, Integer, String, Numeric, Boolean, Foreign
 from database import metadata_obj
 from datetime import datetime
 
-# Tabla de roles
+
 roles_table = Table(
     "roles",
     metadata_obj,
@@ -12,7 +12,7 @@ roles_table = Table(
     Column("created_at", TIMESTAMP, default=datetime.now)
 )
 
-# Tabla de usuarios
+
 users_table = Table(
     "users",
     metadata_obj,
@@ -24,7 +24,7 @@ users_table = Table(
     Column("updated_at", TIMESTAMP, default=datetime.now, onupdate=datetime.now)
 )
 
-# Tabla intermedia user_roles
+
 user_roles_table = Table(
     "user_roles",
     metadata_obj,
@@ -33,7 +33,7 @@ user_roles_table = Table(
     Column("role_id", ForeignKey("roles.id"), nullable=False)
 )
 
-# Tabla de productos
+
 products_table = Table(
     "products",
     metadata_obj,
@@ -49,7 +49,7 @@ products_table = Table(
     Column("updated_at", TIMESTAMP, default=datetime.now, onupdate=datetime.now)
 )
 
-# Tabla de carritos
+
 carts_table = Table(
     "carts",
     metadata_obj,
@@ -61,7 +61,7 @@ carts_table = Table(
     Column("completed_at", TIMESTAMP, nullable=True)
 )
 
-# Tabla de items del carrito
+
 cart_items_table = Table(
     "cart_items",
     metadata_obj,
@@ -72,7 +72,7 @@ cart_items_table = Table(
     Column("price", Numeric(10, 2), nullable=False)
 )
 
-# Tabla de ventas
+
 sales_table = Table(
     "sales",
     metadata_obj,
@@ -83,7 +83,7 @@ sales_table = Table(
     Column("created_at", TIMESTAMP, default=datetime.now)
 )
 
-# Tabla de facturas
+
 bills_table = Table(
     "bills",
     metadata_obj,

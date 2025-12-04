@@ -14,10 +14,10 @@ def register():
     data = request.get_json()
     conn = get_connection()
     
-    # Hash de contraseña
+    
     hashed_password = hash_password(data["password"])
     
-    # Insertar usuario
+    
     stmt = insert(users_table).values(
         name=data["name"],
         email=data["email"],
@@ -27,7 +27,7 @@ def register():
     result = conn.execute(stmt)
     user_id = result.fetchone()[0]
     
-    # Asignar rol de cliente por defecto (role_id = 2)
+    
     stmt_role = insert(user_roles_table).values(
         user_id=user_id,
         role_id=2
@@ -59,15 +59,4 @@ def login():
     
     return jsonify({"message": "Successfully login", "user_id": user.id}), 200
 
-# from flask import Blueprint
-
-# auth_api = Blueprint("auth_api",__name__)
-
-# @auth_api.route("/register", methods = ["POST"])
-# def register():
-#     return {"message": "Successfully register"}
-
-# @auth_api.route("/login", methods=["POST"])
-# def login():
-#     return {"message":"Successfully login"}
 

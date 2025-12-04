@@ -17,7 +17,7 @@ def get_products():
     return jsonify(products), 200
 
 @product_api.route("/products", methods=["POST"])
-@role_required("admin")  # Solo admin puede crear productos
+@role_required("admin")  
 def create_product():
     data = request.get_json()
     conn = get_connection()
@@ -30,7 +30,7 @@ def create_product():
     return jsonify({"message": "Product created"}), 201
 
 @product_api.route("/products/<int:product_id>", methods=["PUT"])
-@role_required("admin")  # Solo admin puede actualizar productos
+@role_required("admin")  
 def update_product(product_id):
     data = request.get_json()
     conn = get_connection()
@@ -47,7 +47,7 @@ def update_product(product_id):
     return jsonify({"message": "Product updated"}), 200
 
 @product_api.route("/products/<int:product_id>", methods=["DELETE"])
-@role_required("admin")  # Solo admin puede eliminar productos
+@role_required("admin")  
 def delete_product(product_id):
     conn = get_connection()
     
@@ -61,18 +61,3 @@ def delete_product(product_id):
     
     conn.close()
     return jsonify({"message": "Product deleted"}), 200
-# class Product:
-#     def __init__(self,id,name,price,stock):
-#         self.id = id
-#         self.name = name
-#         self.price = price
-#         self.stock= stock
-
-
-#     def to_dict(self):
-#         return{
-#             "id": self.id,
-#             "name": self.name,
-#             "price": self.price,
-#             "stock": self.stock
-#         }

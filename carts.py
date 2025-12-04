@@ -15,7 +15,7 @@ def create_cart():
     
     conn = get_connection()
     
-    # Crear carrito nuevo
+    
     stmt = insert(carts_table).values(
         user_id=user_id,
         status="active"
@@ -31,7 +31,7 @@ def create_cart():
 def get_cart(cart_id):
     conn = get_connection()
     
-    # Obtener carrito
+    
     stmt = select(carts_table).where(carts_table.c.id == cart_id)
     cart = conn.execute(stmt).fetchone()
     
@@ -39,7 +39,7 @@ def get_cart(cart_id):
         conn.close()
         return jsonify({"error": "Cart not found"}), 404
     
-    # Obtener items del carrito con información de productos
+    
     stmt = select(
         cart_items_table.c.id,
         cart_items_table.c.quantity,
@@ -71,7 +71,7 @@ def add_item_to_cart(cart_id):
     
     conn = get_connection()
     
-    # Verificar que el producto existe y tiene stock
+    
     stmt = select(products_table).where(products_table.c.id == product_id)
     product = conn.execute(stmt).fetchone()
     
@@ -83,7 +83,7 @@ def add_item_to_cart(cart_id):
         conn.close()
         return jsonify({"error": "Insufficient stock"}), 400
     
-    # Agregar item al carrito
+    
     stmt = insert(cart_items_table).values(
         cart_id=cart_id,
         product_id=product_id,
@@ -125,7 +125,7 @@ def update_cart_item(cart_id, item_id):
     
     conn = get_connection()
     
-    # Obtener el item actual
+    
     stmt = select(cart_items_table).where(
         cart_items_table.c.id == item_id,
         cart_items_table.c.cart_id == cart_id
@@ -136,7 +136,7 @@ def update_cart_item(cart_id, item_id):
         conn.close()
         return jsonify({"error": "Item not found"}), 404
     
-    # Verificar stock
+    
     stmt = select(products_table).where(products_table.c.id == item.product_id)
     product = conn.execute(stmt).fetchone()
     
@@ -144,7 +144,7 @@ def update_cart_item(cart_id, item_id):
         conn.close()
         return jsonify({"error": "Insufficient stock"}), 400
     
-    # Actualizar cantidad
+    
     stmt = update(cart_items_table).where(
         cart_items_table.c.id == item_id
     ).values(quantity=quantity)
