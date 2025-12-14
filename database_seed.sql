@@ -1,4 +1,3 @@
-
 INSERT INTO users (name, email, password) VALUES
 ('Juan Pérez', 'juan.perez@email.com', '$2b$10$hashed_password_1'),
 ('María González', 'maria.gonzalez@email.com', '$2b$10$hashed_password_2'),

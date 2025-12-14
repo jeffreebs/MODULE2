@@ -1,71 +1,63 @@
 from flask import Blueprint, request, jsonify
-from json_hadler import get_file, create_file
-
+from sqlalchemy import select, insert, update, delete
+from database import get_connection
+from models import products_table
+from decorators import role_required
 
 product_api = Blueprint("product_api", __name__)
 
-PRODUCT_ROUTE = "data/products.json"
-
-
-class Product:
-    def __init__(self,id,name,price,stock):
-        self.id = id
-        self.name = name
-        self.price = price
-        self.stock= stock
-
-
-    def to_dict(self):
-        return{
-            "id": self.id,
-            "name": self.name,
-            "price": self.price,
-            "stock": self.stock
-        }
-
-
 @product_api.route("/products", methods=["GET"])
 def get_products():
-    products = get_file(PRODUCT_ROUTE)
+    """Todos pueden ver productos"""
+    conn = get_connection()
+    stmt = select(products_table)
+    result = conn.execute(stmt)
+    products = [dict(row._mapping) for row in result]
+    conn.close()
     return jsonify(products), 200
 
-
 @product_api.route("/products", methods=["POST"])
+@role_required("admin")  
 def create_product():
     data = request.get_json()
-    products = get_file(PRODUCT_ROUTE)
-
-    new_id = products[-1]["id"] + 1 if products else 1
-    data["id"] = new_id
-
-    new_product = Product(**data)
-    products.append(new_product.to_dict())
-
-    create_file(PRODUCT_ROUTE, products)
-    return jsonify({"message": "Product created", "product": new_product.to_dict()}), 201
-
+    conn = get_connection()
+    
+    stmt = insert(products_table).values(**data)
+    conn.execute(stmt)
+    conn.commit()
+    conn.close()
+    
+    return jsonify({"message": "Product created"}), 201
 
 @product_api.route("/products/<int:product_id>", methods=["PUT"])
+@role_required("admin")  
 def update_product(product_id):
     data = request.get_json()
-    products = get_file(PRODUCT_ROUTE)
-
-    for i, product in enumerate(products):
-        if product["id"] == product_id:
-            products[i].update(data)
-            create_file(PRODUCT_ROUTE, products)
-            return jsonify({"message": "Product updated", "product": products[i]}), 200
-
-    return jsonify({"error": "Product not found"}), 404
-
+    conn = get_connection()
+    
+    stmt = update(products_table).where(products_table.c.id == product_id).values(**data)
+    result = conn.execute(stmt)
+    conn.commit()
+    
+    if result.rowcount == 0:
+        conn.close()
+        return jsonify({"error": "Product not found"}), 404
+    
+    conn.close()
+    return jsonify({"message": "Product updated"}), 200
 
 @product_api.route("/products/<int:product_id>", methods=["DELETE"])
+@role_required("admin")  
 def delete_product(product_id):
-    products = get_file(PRODUCT_ROUTE)
-    new_products = [product for product in products if product["id"] != product_id]
-
-    if len(products) == len(new_products):
+    conn = get_connection()
+    
+    stmt = delete(products_table).where(products_table.c.id == product_id)
+    result = conn.execute(stmt)
+    conn.commit()
+    
+    if result.rowcount == 0:
+        conn.close()
         return jsonify({"error": "Product not found"}), 404
-
-    create_file(PRODUCT_ROUTE, new_products)
+    
+    conn.close()
     return jsonify({"message": "Product deleted"}), 200
