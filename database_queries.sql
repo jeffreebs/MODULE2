@@ -1,4 +1,3 @@
-
 SELECT
     c.id AS cart_id,
     c.user_id,
