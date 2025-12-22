@@ -5,12 +5,12 @@ from datetime import datetime
 import os
 from dotenv import load_dotenv
 
-# Cargar variables de entorno
+
 load_dotenv()
 
 metadata_obj = MetaData()
 
-# Tabla de usuarios
+
 user_table = Table(
     "users",
     metadata_obj,
@@ -19,8 +19,6 @@ user_table = Table(
     Column("password", String),
     Column("rol", String(20), default="usuario")
 )
-
-# Tabla de productos (frutas)
 product_table = Table(
     "products",
     metadata_obj,
@@ -31,7 +29,7 @@ product_table = Table(
     Column("cantidad", Integer)
 )
 
-# Tabla de facturas
+
 invoice_table = Table(
     "invoices",
     metadata_obj,
@@ -41,7 +39,7 @@ invoice_table = Table(
     Column("total", Float)
 )
 
-# Tabla de items de factura
+
 invoice_items_table = Table(
     "invoice_items",
     metadata_obj,
@@ -55,7 +53,7 @@ invoice_items_table = Table(
 
 class DB_Manager:
     def __init__(self):
-        # Obtener credenciales desde .env
+        
         db_user = os.getenv('DB_USER', 'postgres')
         db_password = os.getenv('DB_PASSWORD', 'PLACEHOLDER')
         db_host = os.getenv('DB_HOST', 'localhost')
@@ -69,7 +67,7 @@ class DB_Manager:
         self.engine = create_engine(connection_string)
         metadata_obj.create_all(self.engine)
     
-    # MÉTODOS DE USUARIOS
+    
     def insert_user(self, username, password, rol="usuario"):
         """Crear un nuevo usuario"""
         stmt = insert(user_table).returning(user_table.c.id).values(
@@ -108,7 +106,7 @@ class DB_Manager:
             else:
                 return users[0]
     
-    # MÉTODOS DE PRODUCTOS
+    
     def create_product(self, nombre, precio, cantidad, fecha_entrada=None):
         """Crear un nuevo producto"""
         if fecha_entrada is None:
@@ -170,13 +168,13 @@ class DB_Manager:
             conn.commit()
             return result.rowcount > 0
     
-    # MÉTODOS DE FACTURAS
+    
     def create_invoice(self, user_id, items):
         """Crear una factura con sus items"""
         total = 0
         items_data = []
         
-        # Validar productos y calcular total
+        
         for item in items:
             product = self.get_product_by_id(item['product_id'])
             if product is None:
@@ -194,7 +192,7 @@ class DB_Manager:
                 'precio_unitario': product[2]
             })
         
-        # Crear factura
+        
         stmt = insert(invoice_table).returning(invoice_table.c.id).values(
             user_id=user_id,
             fecha=datetime.utcnow(),
@@ -205,7 +203,7 @@ class DB_Manager:
             result = conn.execute(stmt)
             invoice_id = result.all()[0][0]
             
-            # Crear items de factura y actualizar stock
+            
             for item_data in items_data:
                 stmt_item = insert(invoice_items_table).values(
                     invoice_id=invoice_id,
@@ -239,7 +237,7 @@ class DB_Manager:
             for invoice in invoices:
                 invoice_id = invoice[0]
                 
-                # Obtener items de la factura
+                
                 stmt_items = select(
                     invoice_items_table.c.cantidad,
                     invoice_items_table.c.precio_unitario,

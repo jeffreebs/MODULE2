@@ -5,7 +5,7 @@ class JWT_Manager:
     def __init__(self, algorithm='RS256'):
         self.algorithm = algorithm
         
-        # Leer las llaves privada y pública
+        
         with open('keys/private.pem', 'r') as f:
             self.private_key = f.read()
         
@@ -14,7 +14,7 @@ class JWT_Manager:
     
     def encode(self, payload):
         """Crear un token JWT"""
-        # Agregar tiempo de expiración
+        
         payload['exp'] = datetime.utcnow() + timedelta(hours=24)
         
         token = jwt.encode(

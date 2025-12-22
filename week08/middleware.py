@@ -16,20 +16,20 @@ def token_required(f):
             return Response(status=401)
         
         try:
-            # Remover "Bearer " del token
+            
             token = token.replace("Bearer ", "")
             
-            # Decodificar el token
+            
             decoded = jwt_manager.decode(token)
             user_id = decoded['id']
             
-            # Verificar que el usuario existe
+            
             user = db_manager.get_user_by_id(user_id)
             
             if user is None:
                 return Response(status=401)
             
-            # Pasar user_id y user_rol a la función
+            
             kwargs['user_id'] = user_id
             kwargs['user_rol'] = user[3]
             

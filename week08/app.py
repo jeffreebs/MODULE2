@@ -7,14 +7,14 @@ from datetime import datetime
 import os
 from dotenv import load_dotenv
 
-# Cargar variables de entorno
+
 load_dotenv()
 
 app = Flask("fruit-store-service")
 db_manager = DB_Manager()
 jwt_manager = JWT_Manager()
 
-# Inicializar Redis Manager
+
 redis_manager = Redis_Manager(
     host=os.getenv('REDIS_HOST', 'localhost'),
     port=int(os.getenv('REDIS_PORT', 6379)),
@@ -22,7 +22,7 @@ redis_manager = Redis_Manager(
     password=os.getenv('REDIS_PASSWORD', None)
 )
 
-# Verificar conexión con Redis al iniciar
+
 if redis_manager.ping():
     print("✅ Conectado a Redis exitosamente")
 else:
@@ -92,9 +92,7 @@ def me(user_id, user_rol):
     )
 
 
-# ============================================
-# ENDPOINTS DE PRODUCTOS CON CACHÉ
-# ============================================
+
 
 @app.route('/products', methods=['POST'])
 @token_required
@@ -120,7 +118,7 @@ def create_product(user_id, user_rol):
         
         product_id = result[0]
         
-        # INVALIDAR CACHÉ: Eliminar la lista de todos los productos
+        
         redis_manager.delete('products:all')
         print("🗑️ Caché invalidado: products:all")
         
@@ -137,7 +135,7 @@ def create_product(user_id, user_rol):
 def get_all_products(user_id, user_rol):
     """Obtener todos los productos CON CACHÉ"""
     
-    # 1. Intentar obtener del caché
+    
     cache_key = 'products:all'
     cached_data = redis_manager.get(cache_key)
     
@@ -145,7 +143,7 @@ def get_all_products(user_id, user_rol):
         print("✅ Datos obtenidos desde CACHÉ")
         return jsonify(products=cached_data, source='cache')
     
-    # 2. Si no está en caché, consultar la base de datos
+    
     print("📊 Consultando base de datos...")
     try:
         products = db_manager.get_all_products()
@@ -161,7 +159,7 @@ def get_all_products(user_id, user_rol):
             for p in products
         ]
         
-        # 3. Guardar en caché por 1 hora (3600 segundos)
+        
         redis_manager.set(cache_key, products_list, expiration=3600)
         print("💾 Datos guardados en caché")
         
@@ -178,7 +176,7 @@ def get_all_products(user_id, user_rol):
 def get_product(product_id, user_id, user_rol):
     """Obtener un producto específico CON CACHÉ"""
     
-    # 1. Intentar obtener del caché
+    
     cache_key = f'product:{product_id}'
     cached_data = redis_manager.get(cache_key)
     
@@ -186,7 +184,7 @@ def get_product(product_id, user_id, user_rol):
         print(f"✅ Producto {product_id} obtenido desde CACHÉ")
         return jsonify(**cached_data, source='cache')
     
-    # 2. Si no está en caché, consultar la base de datos
+    
     print(f"📊 Consultando producto {product_id} en base de datos...")
     try:
         product = db_manager.get_product_by_id(product_id)
@@ -202,7 +200,7 @@ def get_product(product_id, user_id, user_rol):
             'cantidad': product[4]
         }
         
-        # 3. Guardar en caché por 1 hora
+        
         redis_manager.set(cache_key, product_data, expiration=3600)
         print(f"💾 Producto {product_id} guardado en caché")
         
@@ -231,7 +229,7 @@ def update_product(product_id, user_id, user_rol):
         if not success:
             return Response(status=404)
         
-        # INVALIDAR CACHÉ: Solo del producto específico y la lista completa
+        
         redis_manager.delete(f'product:{product_id}')
         redis_manager.delete('products:all')
         print(f"🗑️ Caché invalidado: product:{product_id} y products:all")
@@ -255,7 +253,7 @@ def delete_product(product_id, user_id, user_rol):
         if not success:
             return Response(status=404)
         
-        # INVALIDAR CACHÉ: Solo del producto específico y la lista completa
+        
         redis_manager.delete(f'product:{product_id}')
         redis_manager.delete('products:all')
         print(f"🗑️ Caché invalidado: product:{product_id} y products:all")
@@ -267,9 +265,7 @@ def delete_product(product_id, user_id, user_rol):
         return Response(status=500)
 
 
-# ============================================
-# ENDPOINTS DE COMPRAS (Sin cambios)
-# ============================================
+
 
 @app.route('/purchase', methods=['POST'])
 @token_required
