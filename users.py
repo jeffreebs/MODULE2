@@ -3,18 +3,35 @@ from sqlalchemy import select, insert, update, delete
 from database import get_connection
 from models import users_table
 from decorators import role_required
+from redis_client import get_cache, set_cache, delete_pattern
 
 user_api = Blueprint("user_api", __name__)
 
 @user_api.route("/users", methods=["GET"])
 @role_required("admin")  
 def get_users():
+    """
+    Solo admin puede ver usuarios
+    Implementa cacheo con TTL de 300 segundos (5 minutos)
+    """
+    # Intentar obtener del caché
+    cache_key = "users:all"
+    cached_data = get_cache(cache_key)
+    
+    if cached_data:
+        return jsonify({"source": "cache", "data": cached_data}), 200
+    
+    # Si no está en caché, consultar la base de datos
     conn = get_connection()
     stmt = select(users_table)
     result = conn.execute(stmt)
     users = [dict(row._mapping) for row in result]
     conn.close()
-    return jsonify(users), 200
+    
+    # Guardar en caché con TTL de 300 segundos (5 minutos)
+    set_cache(cache_key, users, ttl=300)
+    
+    return jsonify({"source": "database", "data": users}), 200
 
 @user_api.route("/users", methods=["POST"])
 @role_required("admin")  
@@ -31,6 +48,9 @@ def create_user():
     conn.execute(stmt)
     conn.commit()
     conn.close()
+    
+    # Invalidar caché de usuarios al crear uno nuevo
+    delete_pattern("users:*")
     
     return jsonify({"message": "User created"}), 201
 
@@ -49,6 +69,10 @@ def update_user(user_id):
         return jsonify({"error": "User not found"}), 404
     
     conn.close()
+    
+    # Invalidar caché de usuarios al actualizar
+    delete_pattern("users:*")
+    
     return jsonify({"message": "User updated"}), 200
 
 @user_api.route("/users/<int:user_id>", methods=["DELETE"])
@@ -65,6 +89,8 @@ def delete_user(user_id):
         return jsonify({"error": "User not found"}), 404
     
     conn.close()
+    
+    # Invalidar caché de usuarios al eliminar
+    delete_pattern("users:*")
+    
     return jsonify({"message": "User deleted"}), 200
-
-
