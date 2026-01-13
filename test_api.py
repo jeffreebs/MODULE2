@@ -63,6 +63,22 @@ class TestPetShopAPI(unittest.TestCase):
         
         conn.commit()
         conn.close()
+
+        self.user_token = self._login(self.test_user_email, self.test_password)
+        self.admin_token = self._login(self.test_admin_email, self.test_password)
+
+    def _login(self, email, password):
+        data = {"email": email, "password": password}
+        response = self.client.post(
+            "/login",
+            data=json.dumps(data),
+            content_type="application/json",
+        )
+        response_data = json.loads(response.data)
+        return response_data.get("token")
+
+    def _auth_headers(self, token):
+        return {"Authorization": f"Bearer {token}"}
     
     def tearDown(self):
         """Limpieza después de cada test"""
@@ -157,6 +173,7 @@ class TestAuthEndpoints(TestPetShopAPI):
         response_data = json.loads(response.data)
         self.assertEqual(response_data["message"], "Successfully login")
         self.assertIn("user_id", response_data)
+        self.assertIn("token", response_data)
     
     def test_login_invalid_credentials(self):
         """Test: Login con credenciales incorrectas debe fallar"""
@@ -192,7 +209,10 @@ class TestProductEndpoints(TestPetShopAPI):
     
     def test_get_products_success(self):
         """Test: Obtener lista de productos exitosamente"""
-        response = self.client.get('/products')
+        response = self.client.get(
+            '/products',
+            headers=self._auth_headers(self.user_token)
+        )
         
         self.assertEqual(response.status_code, 200)
         response_data = json.loads(response.data)
@@ -204,7 +224,10 @@ class TestProductEndpoints(TestPetShopAPI):
     def test_get_product_by_id_success(self):
         """Test: Obtener producto por ID exitosamente"""
         # Asumiendo que existe un producto con id=1
-        response = self.client.get('/products/1')
+        response = self.client.get(
+            '/products/1',
+            headers=self._auth_headers(self.user_token)
+        )
         
         if response.status_code == 200:
             response_data = json.loads(response.data)
@@ -214,7 +237,10 @@ class TestProductEndpoints(TestPetShopAPI):
     
     def test_get_product_not_found(self):
         """Test: Obtener producto inexistente debe retornar 404"""
-        response = self.client.get('/products/99999')
+        response = self.client.get(
+            '/products/99999',
+            headers=self._auth_headers(self.user_token)
+        )
         
         self.assertEqual(response.status_code, 404)
         response_data = json.loads(response.data)
@@ -234,7 +260,7 @@ class TestProductEndpoints(TestPetShopAPI):
         
         self.assertEqual(response.status_code, 401)
         response_data = json.loads(response.data)
-        self.assertEqual(response_data["error"], "User ID required")
+        self.assertEqual(response_data["error"], "Authorization token required")
     
     def test_create_product_as_cliente(self):
         """Test: Crear producto como cliente debe fallar (requiere admin)"""
@@ -247,7 +273,7 @@ class TestProductEndpoints(TestPetShopAPI):
         response = self.client.post('/products',
                                     data=json.dumps(data),
                                     content_type='application/json',
-                                    headers={'user_id': '1000'})  # Cliente
+                                    headers=self._auth_headers(self.user_token))  # Cliente
         
         self.assertEqual(response.status_code, 403)
         response_data = json.loads(response.data)
@@ -265,7 +291,7 @@ class TestProductEndpoints(TestPetShopAPI):
         response = self.client.post('/products',
                                     data=json.dumps(data),
                                     content_type='application/json',
-                                    headers={'user_id': '1001'})  # Admin
+                                    headers=self._auth_headers(self.admin_token))  # Admin
         
         self.assertEqual(response.status_code, 201)
         response_data = json.loads(response.data)
@@ -296,7 +322,7 @@ class TestProductEndpoints(TestPetShopAPI):
         response = self.client.put(f'/products/{product_id}',
                                    data=json.dumps(data),
                                    content_type='application/json',
-                                   headers={'user_id': '1001'})
+                                   headers=self._auth_headers(self.admin_token))
         
         self.assertEqual(response.status_code, 200)
         response_data = json.loads(response.data)
@@ -314,7 +340,7 @@ class TestProductEndpoints(TestPetShopAPI):
         response = self.client.put('/products/99999',
                                    data=json.dumps(data),
                                    content_type='application/json',
-                                   headers={'user_id': '1001'})
+                                   headers=self._auth_headers(self.admin_token))
         
         self.assertEqual(response.status_code, 404)
         response_data = json.loads(response.data)
@@ -337,7 +363,7 @@ class TestProductEndpoints(TestPetShopAPI):
         
         
         response = self.client.delete(f'/products/{product_id}',
-                                      headers={'user_id': '1001'})
+                                      headers=self._auth_headers(self.admin_token))
         
         self.assertEqual(response.status_code, 200)
         response_data = json.loads(response.data)
@@ -350,7 +376,7 @@ class TestUserEndpoints(TestPetShopAPI):
     def test_get_users_as_admin_success(self):
         """Test: Admin puede obtener lista de usuarios"""
         response = self.client.get('/users',
-                                   headers={'user_id': '1001'})
+                                   headers=self._auth_headers(self.admin_token))
         
         self.assertEqual(response.status_code, 200)
         response_data = json.loads(response.data)
@@ -361,7 +387,7 @@ class TestUserEndpoints(TestPetShopAPI):
     def test_get_users_as_cliente_fails(self):
         """Test: Cliente no puede obtener lista de usuarios"""
         response = self.client.get('/users',
-                                   headers={'user_id': '1000'})
+                                   headers=self._auth_headers(self.user_token))
         
         self.assertEqual(response.status_code, 403)
         response_data = json.loads(response.data)
@@ -371,7 +397,7 @@ class TestUserEndpoints(TestPetShopAPI):
         """Test: Sin autenticación no puede obtener usuarios"""
         response = self.client.get('/users')
         
-        self.assertIn(response.status_code, [401, 415])
+        self.assertEqual(response.status_code, 401)
 
 
 class TestCartEndpoints(TestPetShopAPI):
@@ -383,7 +409,7 @@ class TestCartEndpoints(TestPetShopAPI):
         response = self.client.post('/carts',
                                     data=json.dumps(data),
                                     content_type='application/json',
-                                    headers={'user_id': '1000'})
+                                    headers=self._auth_headers(self.user_token))
         
         if response.status_code == 201:
             response_data = json.loads(response.data)
@@ -399,7 +425,10 @@ class TestCartEndpoints(TestPetShopAPI):
     
     def test_get_cart_not_found(self):
         """Test: Obtener carrito inexistente debe retornar 404"""
-        response = self.client.get('/carts/99999')
+        response = self.client.get(
+            '/carts/99999',
+            headers=self._auth_headers(self.user_token)
+        )
         
         self.assertEqual(response.status_code, 404)
         response_data = json.loads(response.data)
@@ -412,7 +441,7 @@ class TestBillEndpoints(TestPetShopAPI):
     def test_get_all_bills_as_admin_success(self):
         """Test: Admin puede obtener todas las facturas"""
         response = self.client.get('/bills',
-                                   headers={'user_id': '1001'})
+                                   headers=self._auth_headers(self.admin_token))
         
         self.assertEqual(response.status_code, 200)
         response_data = json.loads(response.data)
@@ -423,7 +452,7 @@ class TestBillEndpoints(TestPetShopAPI):
     def test_get_all_bills_as_cliente_fails(self):
         """Test: Cliente no puede obtener todas las facturas"""
         response = self.client.get('/bills',
-                                   headers={'user_id': '1000'})
+                                   headers=self._auth_headers(self.user_token))
         
         self.assertEqual(response.status_code, 403)
         response_data = json.loads(response.data)
@@ -432,7 +461,7 @@ class TestBillEndpoints(TestPetShopAPI):
     def test_get_user_bills_access_denied(self):
         """Test: Usuario no puede ver facturas de otro usuario"""
         response = self.client.get('/bills/user/999',
-                                   headers={'user_id': '1000'})
+                                   headers=self._auth_headers(self.user_token))
         
         self.assertEqual(response.status_code, 403)
         response_data = json.loads(response.data)
@@ -441,7 +470,7 @@ class TestBillEndpoints(TestPetShopAPI):
     def test_get_bill_not_found(self):
         """Test: Obtener factura inexistente debe retornar 404"""
         response = self.client.get('/bills/99999',
-                                   headers={'user_id': '1001'})
+                                   headers=self._auth_headers(self.admin_token))
         
         self.assertEqual(response.status_code, 404)
         response_data = json.loads(response.data)

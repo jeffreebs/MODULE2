@@ -5,13 +5,13 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Configuración de Redis
+
 REDIS_HOST = os.getenv('REDIS_HOST')
 REDIS_PORT = int(os.getenv('REDIS_PORT'))
 REDIS_PASSWORD = os.getenv('REDIS_PASSWORD')
 REDIS_USER = os.getenv('REDIS_USER', 'default')
 
-# Crear cliente de Redis
+
 redis_client = redis.Redis(
     host=REDIS_HOST,
     port=REDIS_PORT,
@@ -28,7 +28,7 @@ def get_redis_client():
 
 def set_cache(key, value, ttl=300):
     try:
-        # Convertir objetos especiales a formato serializable
+        
         import decimal
         import datetime
         

@@ -21,19 +21,19 @@ def run_tests():
     print("=" * 70)
     print()
     
-    # Cargar todos los tests
+    
     loader = unittest.TestLoader()
     start_dir = '.'
     suite = loader.discover(start_dir, pattern='test_*.py')
     
-    # Crear un runner con verbosidad
+    
     runner = unittest.TextTestRunner(verbosity=2)
     
-    # Ejecutar tests
+
     print("Ejecutando tests...\n")
     result = runner.run(suite)
     
-    # Generar reporte
+
     print("\n")
     print("=" * 70)
     print("📊 REPORTE DE RESULTADOS")
@@ -50,12 +50,12 @@ def run_tests():
     print(f"⚠️  Errores: {errors}/{total_tests}")
     print(f"⏭️  Omitidos: {skipped}/{total_tests}")
     
-    # Calcular porcentaje de éxito
+    
     if total_tests > 0:
         success_rate = (success / total_tests) * 100
         print(f"\n📈 Tasa de éxito: {success_rate:.2f}%")
     
-    # Mostrar detalles de fallos
+    
     if failures > 0:
         print("\n" + "=" * 70)
         print("❌ DETALLES DE TESTS FALLIDOS")
@@ -64,7 +64,7 @@ def run_tests():
             print(f"\nTest: {test}")
             print(f"Error:\n{traceback}")
     
-    # Mostrar detalles de errores
+    
     if errors > 0:
         print("\n" + "=" * 70)
         print("⚠️  DETALLES DE ERRORES")
@@ -75,10 +75,10 @@ def run_tests():
     
     print("\n" + "=" * 70)
     
-    # Guardar reporte en archivo
+    
     save_report(result, total_tests, success, failures, errors, skipped)
     
-    # Retornar código de salida
+    
     if result.wasSuccessful():
         print("✅ TODOS LOS TESTS PASARON EXITOSAMENTE")
         print("=" * 70)

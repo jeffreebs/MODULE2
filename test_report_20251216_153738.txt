@@ -1,0 +1,50 @@
+======================================================================
+REPORTE DE UNIT TESTS - PET SHOP API
+======================================================================
+Fecha: 2025-12-16 15:37:38
+======================================================================
+
+RESUMEN DE RESULTADOS:
+  Total de tests ejecutados: 23
+  Tests exitosos: 21
+  Tests fallidos: 1
+  Errores: 1
+  Omitidos: 0
+  Tasa de éxito: 91.30%
+
+======================================================================
+TESTS FALLIDOS:
+======================================================================
+
+Test: test_register_success (test_api.TestAuthEndpoints.test_register_success)
+Error:
+Traceback (most recent call last):
+  File "C:\Users\FREDDY\OneDrive\Documentos\MODULE2\ProyectoTienda\test_api.py", line 94, in test_register_success
+    self.assertEqual(response.status_code, 201)
+AssertionError: 500 != 201
+
+
+======================================================================
+ERRORES:
+======================================================================
+
+Test: test_get_users_without_auth (test_api.TestUserEndpoints.test_get_users_without_auth)
+Error:
+Traceback (most recent call last):
+  File "C:\Users\FREDDY\OneDrive\Documentos\MODULE2\ProyectoTienda\test_api.py", line 356, in test_get_users_without_auth
+    response_data = json.loads(response.data)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.11_3.11.2544.0_x64__qbz5n2kfra8p0\Lib\json\__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.11_3.11.2544.0_x64__qbz5n2kfra8p0\Lib\json\decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.11_3.11.2544.0_x64__qbz5n2kfra8p0\Lib\json\decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+
+======================================================================
+RESULTADO: ALGUNOS TESTS FALLARON 
+======================================================================
