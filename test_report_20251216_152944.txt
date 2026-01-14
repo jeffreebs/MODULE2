@@ -1,0 +1,66 @@
+======================================================================
+REPORTE DE UNIT TESTS - PET SHOP API
+======================================================================
+Fecha: 2025-12-16 15:29:44
+======================================================================
+
+RESUMEN DE RESULTADOS:
+  Total de tests ejecutados: 23
+  Tests exitosos: 21
+  Tests fallidos: 1
+  Errores: 1
+  Omitidos: 0
+  Tasa de éxito: 91.30%
+
+======================================================================
+TESTS FALLIDOS:
+======================================================================
+
+Test: test_get_users_without_auth (test_api.TestUserEndpoints.test_get_users_without_auth)
+Error:
+Traceback (most recent call last):
+  File "C:\Users\FREDDY\OneDrive\Documentos\MODULE2\ProyectoTienda\test_api.py", line 352, in test_get_users_without_auth
+    self.assertEqual(response.status_code, 401)
+AssertionError: 415 != 401
+
+
+======================================================================
+ERRORES:
+======================================================================
+
+Test: test_register_success (test_api.TestAuthEndpoints.test_register_success)
+Error:
+Traceback (most recent call last):
+  File "C:\Users\FREDDY\OneDrive\Documentos\MODULE2\ProyectoTienda\test_api.py", line 101, in test_register_success
+    user_roles_table.c.user_id.in_(
+  File "C:\Users\FREDDY\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\sqlalchemy\sql\operators.py", line 934, in in_
+    return self.operate(in_op, other)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\FREDDY\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\sqlalchemy\sql\elements.py", line 1616, in operate
+    return op(self.comparator, *other, **kwargs)  # type: ignore[no-any-return]  # noqa: E501
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\FREDDY\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\sqlalchemy\sql\operators.py", line 2122, in in_op
+    return a.in_(b)
+           ^^^^^^^^
+  File "C:\Users\FREDDY\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\sqlalchemy\sql\operators.py", line 934, in in_
+    return self.operate(in_op, other)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\FREDDY\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\sqlalchemy\sql\type_api.py", line 194, in operate
+    return op_fn(self.expr, op, *other, **addtl_kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\FREDDY\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\sqlalchemy\sql\default_comparator.py", line 220, in _in_impl
+    seq_or_selectable = coercions.expect(
+                        ^^^^^^^^^^^^^^^^^
+  File "C:\Users\FREDDY\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\sqlalchemy\sql\coercions.py", line 413, in expect
+    resolved = impl._literal_coercion(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\FREDDY\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\sqlalchemy\sql\coercions.py", line 885, in _literal_coercion
+    self._raise_for_expected(element, **kw)
+  File "C:\Users\FREDDY\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\sqlalchemy\sql\coercions.py", line 535, in _raise_for_expected
+    raise exc.ArgumentError(msg, code=code) from err
+sqlalchemy.exc.ArgumentError: IN expression list, SELECT construct, or bound parameter object expected, got 9.
+
+
+======================================================================
+RESULTADO: ALGUNOS TESTS FALLARON 
+======================================================================

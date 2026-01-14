@@ -99,3 +99,12 @@ bills_table = Table(
     Column("billing_tax_id", String(50), nullable=False),
     Column("created_at", TIMESTAMP, default=datetime.now)
 )
+
+
+bill_returns_table = Table(
+    "bill_returns",
+    metadata_obj,
+    Column("id", Integer, primary_key=True),
+    Column("bill_id", ForeignKey("bills.id"), nullable=False, unique=True),
+    Column("returned_at", TIMESTAMP, default=datetime.now)
+)

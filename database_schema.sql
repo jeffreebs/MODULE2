@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS bill_returns CASCADE;
 DROP TABLE IF EXISTS bills CASCADE;
 DROP TABLE IF EXISTS sales CASCADE;
 DROP TABLE IF EXISTS cart_items CASCADE;
@@ -196,6 +197,21 @@ COMMENT ON TABLE bills IS 'Facturas generadas para las ventas';
 COMMENT ON COLUMN bills.bill_number IS 'Número único de factura (formato: FAC-YYYY-XXXXX)';
 
 
+CREATE TABLE bill_returns (
+    id SERIAL PRIMARY KEY,
+    bill_id INT NOT NULL UNIQUE,
+    returned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_bill_returns_bill FOREIGN KEY (bill_id)
+        REFERENCES bills(id) ON DELETE RESTRICT
+);
+
+
+CREATE INDEX idx_bill_returns_bill ON bill_returns(bill_id);
+
+COMMENT ON TABLE bill_returns IS 'Devoluciones de facturas';
+
+
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -226,5 +242,5 @@ CREATE TRIGGER update_carts_updated_at
 DO $$
 BEGIN
     RAISE NOTICE 'Schema de base de datos creado exitosamente!';
-    RAISE NOTICE 'Tablas creadas: users, roles, user_roles, products, carts, cart_items, sales, bills';
+    RAISE NOTICE 'Tablas creadas: users, roles, user_roles, products, carts, cart_items, sales, bills, bill_returns';
 END $$;
